@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Departamento {
+  id_departamentos Int       @id @default(autoincrement())
+  nombre           String
+  empleados        Empleado[]
+  noticias         Noticia[]
+}
+
+model Empleado {
+  id_empleados     Int       @id @default(autoincrement())
+  id_departamento  Int
+  nombre           String
+  apellido         String
+  fecha_nacimiento DateTime
+  email            String    @unique
+  contraseña       String
+  rol              String    // Valores posibles: "empleado", "jefe", "gerente", etc.
+
+  departamento     Departamento @relation(fields: [id_departamento], references: [id_departamentos])
+  noticias         Noticia[]
+}
+
+model Noticia {
+  id_noticias        Int       @id @default(autoincrement())
+  id_empleados       Int
+  id_departamentos   Int
+  titulo             String
+  contenido          String
+  descripcion_general String
+  color              String
+
+  creador            Empleado    @relation(fields: [id_empleados], references: [id_empleados])
+  departamento       Departamento @relation(fields: [id_departamentos], references: [id_departamentos])
+}
