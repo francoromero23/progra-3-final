@@ -34,14 +34,16 @@ model Empleado {
 }
 
 model Noticia {
-  id_noticias        Int       @id @default(autoincrement())
-  id_empleados       Int
-  id_departamentos   Int
-  titulo             String
-  contenido          String
+  id_noticias         Int          @id @default(autoincrement())
+  id_empleados        Int
+  id_departamentos    Int
+  titulo              String
+  contenido           String
   descripcion_general String
-  color              String
+  color               String
+  fecha_evento      DateTime     @default(now())
 
-  creador            Empleado    @relation(fields: [id_empleados], references: [id_empleados])
-  departamento       Departamento @relation(fields: [id_departamentos], references: [id_departamentos])
+  creador             Empleado     @relation(fields: [id_empleados], references: [id_empleados])
+  departamento        Departamento @relation(fields: [id_departamentos], references: [id_departamentos])
 }
+
