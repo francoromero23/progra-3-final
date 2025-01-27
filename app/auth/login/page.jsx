@@ -14,22 +14,30 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    if (data.success) {
-      // Guardar información del usuario en el localStorage
-      const { id_empleados, id_departamento, rol } = data.user;
 
-      localStorage.setItem("empleadoId", id_empleados); // ID del empleado
-      localStorage.setItem("departamentoId", id_departamento); // ID del departamento
-      localStorage.setItem("rol", rol); // Rol del usuario
-      window.location.href = "/noticias";
-    } else {
-      alert(data.message);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error("Error al iniciar sesión.");
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Guarda el id_departamento en localStorage
+        localStorage.setItem("departamentoId", data.id_departamento);
+
+        alert("Inicio de sesión exitoso.");
+        window.location.href = "/noticias";
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+      alert("Ocurrió un error. Por favor, intenta nuevamente.");
     }
   };
 
@@ -44,6 +52,7 @@ export default function Login() {
           value={formData.email}
           onChange={handleChange}
           className="border p-2 rounded"
+          required
         />
         <input
           type="password"
@@ -52,6 +61,7 @@ export default function Login() {
           value={formData.contraseña}
           onChange={handleChange}
           className="border p-2 rounded"
+          required
         />
         <button type="submit" className="bg-blue-500 text-white p-2 rounded">
           Iniciar Sesión
