@@ -60,7 +60,11 @@ export async function POST(req) {
       contenido,
       descripcion,
       color,
+      fecha_evento, // Recibir la fecha
     } = await req.json();
+
+    // Si no se proporciona una fecha, usa la fecha actual
+    const fecha = fecha_evento ? new Date(fecha_evento) : new Date();
 
     // Validar que el color no sea null o vacío
     if (!color) {
@@ -79,6 +83,7 @@ export async function POST(req) {
         contenido,
         descripcion_general: descripcion,
         color,
+        fecha_evento: fecha, // Guardar la fecha seleccionada
       },
     });
 

@@ -7,13 +7,6 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model Departamento {
-  id_departamentos Int       @id @default(autoincrement())
-  nombre           String
-  empleados        Empleado[]
-  noticias         Noticia[]
-}
-
 model Empleado {
   id_empleados     Int       @id @default(autoincrement())
   id_departamento  Int
@@ -22,10 +15,10 @@ model Empleado {
   fecha_nacimiento DateTime
   email            String    @unique
   contraseña       String
-  rol              String    // Valores posibles: "empleado", "jefe", "gerente", etc.
+  rol              String
 
   departamento     Departamento @relation(fields: [id_departamento], references: [id_departamentos])
-  noticias         Noticia[]
+  noticias         Noticia[]    // No es necesario el onDelete aquí
 }
 
 model Noticia {
@@ -36,9 +29,16 @@ model Noticia {
   contenido           String
   descripcion_general String
   color               String
-  fecha_evento      DateTime     @default(now())
+  fecha_evento        DateTime     @default(now())
 
-  creador             Empleado     @relation(fields: [id_empleados], references: [id_empleados])
+  creador             Empleado     @relation(fields: [id_empleados], references: [id_empleados], onDelete: Cascade) // El onDelete se debe especificar aquí
   departamento        Departamento @relation(fields: [id_departamentos], references: [id_departamentos])
+}
+
+model Departamento {
+  id_departamentos   Int       @id @default(autoincrement())
+  nombre             String
+  empleados          Empleado[]
+  noticias           Noticia[]
 }
 

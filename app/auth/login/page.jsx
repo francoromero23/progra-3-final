@@ -22,13 +22,17 @@ export default function Login() {
         body: JSON.stringify(formData),
       });
 
+      console.log(res);
+
       if (!res.ok) throw new Error("Error al iniciar sesión.");
 
       const data = await res.json();
 
       if (data.success) {
-        // Guarda el id_departamento en localStorage
+        // Guarda el id_empleado, id_departamento y rol en localStorage
+        localStorage.setItem("empleadoId", data.id_empleado);
         localStorage.setItem("departamentoId", data.id_departamento);
+        localStorage.setItem("rol", data.rol);
 
         alert("Inicio de sesión exitoso.");
         window.location.href = "/noticias";
