@@ -33,7 +33,7 @@ export async function GET() {
 
 export async function DELETE(req) {
   try {
-    const { id_empleados } = await req.json(); 
+    const { id_empleados } = await req.json();
     await prisma.empleado.delete({
       where: { id_empleados: id_empleados },
     });
@@ -47,5 +47,22 @@ export async function DELETE(req) {
       JSON.stringify({ message: "Error al eliminar empleado" }),
       { status: 500 }
     );
+  }
+}
+export async function PUT(req) {
+  try {
+    const { id_empleados, nombre, apellido, email, rol } = await req.json();
+
+    const empleadoActualizado = await prisma.empleado.update({
+      where: { id_empleados },
+      data: { nombre, apellido, email, rol },
+    });
+
+    return new Response(JSON.stringify(empleadoActualizado), { status: 200 });
+  } catch (error) {
+    console.error("Error al actualizar empleado:", error);
+    return new Response(JSON.stringify({ message: "Error al actualizar" }), {
+      status: 500,
+    });
   }
 }

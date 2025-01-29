@@ -14,10 +14,13 @@ interface Empleado {
   };
 }
 
+const ROLES = ["empleado", "gerente", "jefe"];
+
 export default function Empleados() {
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null); // Para mostrar el cuadro de confirmación
+  const [editingEmpleado, setEditingEmpleado] = useState<Empleado | null>(null);
 
   useEffect(() => {
     const fetchEmpleados = async () => {
@@ -54,6 +57,29 @@ export default function Empleados() {
       console.error("Error al eliminar el empleado");
     }
     setConfirmDelete(null); // Cerrar el cuadro de confirmación
+  };
+
+  const handleEdit = async () => {
+    if (!editingEmpleado) return;
+
+    const res = await fetch(`/api/empleados`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editingEmpleado),
+    });
+
+    if (res.ok) {
+      setEmpleados((prev) =>
+        prev.map((emp) =>
+          emp.id_empleados === editingEmpleado.id_empleados
+            ? editingEmpleado
+            : emp
+        )
+      );
+      setEditingEmpleado(null);
+    } else {
+      console.error("Error al actualizar empleado");
+    }
   };
 
   if (loading) return <p className="text-center mt-6">Cargando empleados...</p>;
@@ -105,6 +131,13 @@ export default function Empleados() {
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   <button
+                    className="text-blue-500 hover:text-blue-700 mr-2"
+                    onClick={() => setEditingEmpleado(empleado)}
+                  >
+                    Editar
+                  </button>
+
+                  <button
                     className="text-red-500 hover:text-red-700"
                     onClick={() => setConfirmDelete(empleado.id_empleados)}
                   >
@@ -116,6 +149,89 @@ export default function Empleados() {
           </tbody>
         </table>
       </div>
+
+      {editingEmpleado && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Editar Empleado</h2>
+            <input
+              type="text"
+              className="w-full border px-2 py-1 mb-2"
+              value={editingEmpleado.nombre}
+              onChange={(e) =>
+                setEditingEmpleado({
+                  ...editingEmpleado,
+                  nombre: e.target.value,
+                })
+              }
+              placeholder="Nombre"
+            />
+            <input
+              type="text"
+              className="w-full border px-2 py-1 mb-2"
+              value={editingEmpleado.apellido}
+              onChange={(e) =>
+                setEditingEmpleado({
+                  ...editingEmpleado,
+                  apellido: e.target.value,
+                })
+              }
+              placeholder="Apellido"
+            />
+            <input
+              type="date"
+              className="w-full border px-2 py-1 mb-2"
+              value={editingEmpleado.fecha_nacimiento}
+              onChange={(e) =>
+                setEditingEmpleado({
+                  ...editingEmpleado,
+                  fecha_nacimiento: e.target.value,
+                })
+              }
+              placeholder="Fecha de Nacimiento"
+            />
+            <input
+              type="email"
+              className="w-full border px-2 py-1 mb-2"
+              value={editingEmpleado.email}
+              onChange={(e) =>
+                setEditingEmpleado({
+                  ...editingEmpleado,
+                  email: e.target.value,
+                })
+              }
+              placeholder="Email"
+            />
+            <select
+              className="w-full border px-2 py-1 mb-2"
+              value={editingEmpleado.rol}
+              onChange={(e) =>
+                setEditingEmpleado({ ...editingEmpleado, rol: e.target.value })
+              }
+            >
+              {ROLES.map((rol) => (
+                <option key={rol} value={rol}>
+                  {rol}
+                </option>
+              ))}
+            </select>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded mr-2"
+                onClick={handleEdit}
+              >
+                Guardar
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded"
+                onClick={() => setEditingEmpleado(null)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmDelete && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
