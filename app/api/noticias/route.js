@@ -14,9 +14,19 @@ export async function GET(req) {
       );
     }
 
-    // Obtener noticias con datos del creador
+    const hoy = new Date();
+    const haceUnaSemana = new Date();
+    haceUnaSemana.setDate(hoy.getDate() - 7); // Restar 7 días a la fecha actual
+
+    // Obtener noticias con datos del creador y con el rango deseado
     const noticias = await prisma.noticia.findMany({
-      where: { id_departamentos: Number(departamentoId) },
+      where: {
+        id_departamentos: Number(departamentoId),
+        OR: [
+          { fecha_evento: { gte: hoy } }, // Futuras
+          { fecha_evento: { gte: haceUnaSemana, lt: hoy } }, // Última semana
+        ],
+      },
       include: {
         creador: {
           select: {
@@ -26,7 +36,7 @@ export async function GET(req) {
         },
       },
       orderBy: {
-        fecha_evento: "desc", // Ordenar por la fecha del evento, más recientes primero
+        fecha_evento: "asc", // Ordenar de más cercano a más lejano
       },
     });
 
