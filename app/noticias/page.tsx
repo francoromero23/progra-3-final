@@ -127,13 +127,15 @@ export default function Noticias() {
   return (
     <div className="p-4">
       {/* Botones superiores */}
-      <div className="flex justify-between items-center">
-        <button
-          onClick={navigateToEmpleados}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
-        >
-          Ver Empleados
-        </button>
+      <div className="flex justify-between items-center mb-4">
+        {rol === "jefe" && (
+          <button
+            onClick={navigateToEmpleados}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+          >
+            Ver Empleados
+          </button>
+        )}
         <button
           onClick={handleLogout}
           className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition"

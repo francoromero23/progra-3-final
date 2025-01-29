@@ -49,7 +49,6 @@ export default function Register() {
       });
 
       if (!res.ok) {
-        // Si no es ok, intenta obtener el mensaje de error
         const errorData = await res.json();
         console.error("Error al registrar:", errorData);
         alert(errorData.message || "Ocurrió un error inesperado.");
@@ -69,92 +68,136 @@ export default function Register() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-4">Registrarse</h1>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="nombre"
-            placeholder="Nombre"
-            value={formData.nombre}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="text"
-            name="apellido"
-            placeholder="Apellido"
-            value={formData.apellido}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="password"
-            name="contraseña"
-            placeholder="Contraseña"
-            value={formData.contraseña}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            type="date"
-            name="fechaNacimiento"
-            placeholder="Fecha de Nacimiento"
-            value={formData.fechaNacimiento}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          />
-          <select
-            name="departamentoId"
-            value={formData.departamentoId}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          >
-            <option value="" disabled>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-teal-100">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-6">
+          Registrarse
+        </h1>
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Introduzca su Nombre
+            </label>
+            <input
+              type="text"
+              name="nombre"
+              placeholder="Nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Introduzca su Apellido
+            </label>
+            <input
+              type="text"
+              name="apellido"
+              placeholder="Apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Introduzca su Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Introduzca su Contraseña
+            </label>
+            <input
+              type="password"
+              name="contraseña"
+              placeholder="Contraseña"
+              value={formData.contraseña}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Introduzca su Fecha de Nacimiento
+            </label>
+            <input
+              type="date"
+              name="fechaNacimiento"
+              placeholder="Fecha de Nacimiento"
+              value={formData.fechaNacimiento}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Selecciona un Departamento
-            </option>
-            {departments.length === 0 ? (
-              <option disabled>No hay departamentos disponibles</option>
-            ) : (
-              departments.map((dept) => (
-                <option
-                  key={dept.id_departamentos}
-                  value={dept.id_departamentos}
-                >
-                  {dept.nombre}
-                </option>
-              ))
-            )}
-          </select>
-          <select
-            name="rol"
-            value={formData.rol}
-            onChange={handleChange}
-            className="border p-2 rounded"
-            required
-          >
-            <option value="empleado">Empleado</option>
-            <option value="jefe">Jefe</option>
-            <option value="gerente">Gerente</option>
-          </select>
+            </label>
+            <select
+              name="departamentoId"
+              value={formData.departamentoId}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            >
+              <option value="" disabled>
+                Selecciona un Departamento
+              </option>
+              {departments.length === 0 ? (
+                <option disabled>No hay departamentos disponibles</option>
+              ) : (
+                departments.map((dept) => (
+                  <option
+                    key={dept.id_departamentos}
+                    value={dept.id_departamentos}
+                  >
+                    {dept.nombre}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Selecciona un Rol
+            </label>
+            <select
+              name="rol"
+              value={formData.rol}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            >
+              <option value="empleado">Empleado</option>
+              <option value="jefe">Jefe</option>
+              <option value="gerente">Gerente</option>
+            </select>
+          </div>
+
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300"
           >
             Registrarse
           </button>

@@ -46,31 +46,50 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
-      <form className="flex flex-col gap-4 mt-4" onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          className="border p-2 rounded"
-          required
-        />
-        <input
-          type="password"
-          name="contraseña"
-          placeholder="Contraseña"
-          value={formData.contraseña}
-          onChange={handleChange}
-          className="border p-2 rounded"
-          required
-        />
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-teal-100">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
+        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-6">
           Iniciar Sesión
-        </button>
-      </form>
+        </h1>
+        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Introduzca su Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Introduzca su Contraseña
+            </label>
+            <input
+              type="password"
+              name="contraseña"
+              placeholder="Contraseña"
+              value={formData.contraseña}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300"
+          >
+            Iniciar Sesión
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
