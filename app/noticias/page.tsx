@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import FormularioNoticia from "../components/FormularioNoticia";
 
 interface Noticia {
   id_noticias: number;
@@ -15,7 +16,7 @@ interface Noticia {
 
 export default function Noticias() {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
-  const [selectedNoticia, setSelectedNoticia] = useState<Noticia | null>(null); // Noticia seleccionada
+  const [selectedNoticia, setSelectedNoticia] = useState<Noticia | null>(null);
   const [formData, setFormData] = useState({
     titulo: "",
     contenido: "",
@@ -92,8 +93,6 @@ export default function Noticias() {
       });
 
       if (!res.ok) throw new Error("Error al crear la noticia");
-
-      alert("Noticia creada exitosamente.");
       setShowForm(false);
       fetchNoticias(idDepartamento);
     } catch (error) {
@@ -117,7 +116,7 @@ export default function Noticias() {
     localStorage.removeItem("empleadoId");
 
     // Redirigir al usuario a la página de inicio (app/page.jsx)
-    router.push("/"); // Asegúrate de que la ruta de inicio esté configurada correctamente
+    router.push("/");
   };
 
   const navigateToEmpleados = () => {
@@ -211,116 +210,11 @@ export default function Noticias() {
       </div>
 
       {showForm && (
-        <form
+        <FormularioNoticia
+          formData={formData}
+          onChange={handleChange}
           onSubmit={handleSubmit}
-          className="mt-6 bg-gray-50 p-6 rounded-lg shadow-md mx-auto max-w-4xl"
-        >
-          <div className="mb-4">
-            {/* Título */}
-            <label
-              htmlFor="titulo"
-              className="block text-gray-700 font-semibold mb-2"
-            >
-              Título
-            </label>
-            <input
-              type="text"
-              name="titulo"
-              id="titulo"
-              placeholder="Título"
-              value={formData.titulo}
-              onChange={handleChange}
-              className="border p-3 rounded w-full"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            {/* Contenido */}
-            <label
-              htmlFor="contenido"
-              className="block text-gray-700 font-semibold mb-2"
-            >
-              Contenido
-            </label>
-            <textarea
-              name="contenido"
-              id="contenido"
-              placeholder="Contenido"
-              value={formData.contenido}
-              onChange={handleChange}
-              className="border p-3 rounded w-full"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            {/* Descripción */}
-            <label
-              htmlFor="descripcion"
-              className="block text-gray-700 font-semibold mb-2"
-            >
-              Descripción General
-            </label>
-            <textarea
-              name="descripcion"
-              id="descripcion"
-              placeholder="Descripción General"
-              value={formData.descripcion}
-              onChange={handleChange}
-              className="border p-3 rounded w-full"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            {/* Fecha del evento */}
-            <label
-              htmlFor="fecha_evento"
-              className="block text-gray-700 font-semibold mb-2"
-            >
-              Fecha del Evento
-            </label>
-            <input
-              type="date"
-              name="fecha_evento"
-              id="fecha_evento"
-              value={formData.fecha_evento}
-              onChange={handleChange}
-              className="border p-3 rounded w-full"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            {/* Color */}
-            <label
-              htmlFor="color"
-              className="block text-gray-700 font-semibold mb-2"
-            >
-              Color
-            </label>
-            <input
-              type="color"
-              name="color"
-              id="color"
-              value={formData.color}
-              onChange={handleChange}
-              className="border p-3 rounded w-full"
-              required
-            />
-          </div>
-
-          {/* Botón para enviar el formulario */}
-          <div className="flex justify-center mt-4">
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition"
-            >
-              Crear Noticia
-            </button>
-          </div>
-        </form>
+        />
       )}
     </div>
   );

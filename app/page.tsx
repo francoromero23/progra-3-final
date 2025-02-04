@@ -27,7 +27,7 @@ export default function Home() {
         </div>
       </div>
       <footer className="mt-12 text-center text-gray-500 text-sm">
-        <p>&copy; 2025 Nombre de la Empresa. Todos los derechos reservados.</p>
+        <p>&copy; 2025 FranSOFT. Todos los derechos reservados.</p>
       </footer>
     </div>
   );

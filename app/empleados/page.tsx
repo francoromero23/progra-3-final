@@ -46,7 +46,7 @@ export default function Empleados() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id_empleado: id }),
+      body: JSON.stringify({ id_empleados: id }),
     });
 
     if (res.ok) {
