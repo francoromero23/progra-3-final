@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET() {
+export async function GET(): Promise<Response> {
   try {
     const empleados = await prisma.empleado.findMany({
       include: {
@@ -31,9 +31,13 @@ export async function GET() {
   }
 }
 
-export async function DELETE(req) {
+interface DeleteRequestBody {
+  id_empleados: number;
+}
+
+export async function DELETE(req: Request): Promise<Response> {
   try {
-    const { id_empleados } = await req.json();
+    const { id_empleados }: DeleteRequestBody = await req.json();
     await prisma.empleado.delete({
       where: { id_empleados: id_empleados },
     });
@@ -49,9 +53,19 @@ export async function DELETE(req) {
     );
   }
 }
-export async function PUT(req) {
+
+interface PutRequestBody {
+  id_empleados: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  rol: string;
+}
+
+export async function PUT(req: Request): Promise<Response> {
   try {
-    const { id_empleados, nombre, apellido, email, rol } = await req.json();
+    const { id_empleados, nombre, apellido, email, rol }: PutRequestBody =
+      await req.json();
 
     const empleadoActualizado = await prisma.empleado.update({
       where: { id_empleados },

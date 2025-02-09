@@ -2,7 +2,17 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET(req) {
+interface NoticiaFormatted {
+  id_noticias: number;
+  titulo: string;
+  contenido: string;
+  descripcion_general: string;
+  fecha_evento: Date;
+  color: string;
+  creador_nombre: string;
+}
+
+export async function GET(req: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(req.url);
     const departamentoId = searchParams.get("departamentoId");
@@ -41,7 +51,7 @@ export async function GET(req) {
     });
 
     // Formatear las noticias con el nombre completo del creador
-    const formattedNoticias = noticias.map((noticia) => ({
+    const formattedNoticias: NoticiaFormatted[] = noticias.map((noticia) => ({
       id_noticias: noticia.id_noticias,
       titulo: noticia.titulo,
       contenido: noticia.contenido,
@@ -61,7 +71,17 @@ export async function GET(req) {
   }
 }
 
-export async function POST(req) {
+interface PostRequestBody {
+  id_empleado: number;
+  id_departamento: number;
+  titulo: string;
+  contenido: string;
+  descripcion: string;
+  color: string;
+  fecha_evento?: string; // Fecha opcional
+}
+
+export async function POST(req: Request): Promise<Response> {
   try {
     const {
       id_empleado,
@@ -71,7 +91,7 @@ export async function POST(req) {
       descripcion,
       color,
       fecha_evento, // Recibir la fecha
-    } = await req.json();
+    }: PostRequestBody = await req.json();
 
     // Si no se proporciona una fecha, usa la fecha actual
     const fecha = fecha_evento ? new Date(fecha_evento) : new Date();

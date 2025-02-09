@@ -1,14 +1,19 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Empleado } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-export async function POST(req) {
+interface PostRequestBody {
+  email: string;
+  contraseña: string;
+}
+
+export async function POST(req: Request): Promise<Response> {
   try {
-    const { email, contraseña } = await req.json();
+    const { email, contraseña }: PostRequestBody = await req.json();
 
     // Buscar el usuario en la base de datos con el modelo 'Empleado'
-    const user = await prisma.empleado.findUnique({
+    const user: Empleado | null = await prisma.empleado.findUnique({
       where: { email },
     });
 
@@ -30,7 +35,7 @@ export async function POST(req) {
       );
     }
 
-    // Devolver la respuesta con el id_departamento y el rol  si la contraseña es correcta
+    // Devolver la respuesta con el id_departamento y el rol si la contraseña es correcta
     return new Response(
       JSON.stringify({
         success: true,
@@ -49,3 +54,4 @@ export async function POST(req) {
     );
   }
 }
+

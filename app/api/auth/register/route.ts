@@ -3,24 +3,22 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function POST(req) {
+interface PostRequestBody {
+  nombre: string;
+  apellido: string;
+  email: string;
+  contraseña: string;
+  fechaNacimiento: string;
+  departamentoId: string;
+  rol: string;
+}
+
+export async function POST(req: Request): Promise<Response> {
   try {
-    // Parsear la solicitud JSON
-    const {
-      nombre,
-      apellido,
-      email,
-      contraseña,
-      fechaNacimiento,
-      departamentoId,
-      rol,
-    } = await req.json();
+    const { nombre, apellido, email, contraseña, fechaNacimiento, departamentoId, rol }: PostRequestBody = await req.json();
 
     // Verificar si el usuario ya existe
-    const existingUser = await prisma.empleado.findUnique({
-      where: { email },
-    });
-
+    const existingUser = await prisma.empleado.findUnique({ where: { email } });
     if (existingUser) {
       return new Response(
         JSON.stringify({ success: false, message: "El usuario ya existe" }),
@@ -28,17 +26,15 @@ export async function POST(req) {
       );
     }
 
-    // Obtener la IP del cliente
-    const ip = req.headers.get("x-forwarded-for") || req.socket.remoteAddress;
-
-    // Validar y formatear la fecha de nacimiento
+    // Validar fecha de nacimiento
     const fechaValida = new Date(fechaNacimiento);
-    if (isNaN(fechaValida)) {
+    if (isNaN(fechaValida.getTime())) {
       return new Response(
         JSON.stringify({ message: "Fecha de nacimiento no válida" }),
         { status: 400 }
       );
     }
+
     // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(contraseña, 10);
 
@@ -56,18 +52,15 @@ export async function POST(req) {
     });
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Usuario registrado con éxito",
-      }),
+      JSON.stringify({ success: true, message: "Usuario registrado con éxito" }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error en el registro:", error);
-
     return new Response(
       JSON.stringify({ message: "Error interno del servidor" }),
       { status: 500 }
     );
   }
 }
+
