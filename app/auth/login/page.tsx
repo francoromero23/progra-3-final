@@ -2,6 +2,7 @@
 
 import { useState, ChangeEvent, FormEvent } from "react";
 import InputField from "@/app/components/InputField";
+import Link from "next/link";
 
 interface FormData {
   email: string;
@@ -56,33 +57,41 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-teal-100">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
-        <h1 className="text-3xl font-extrabold text-center text-gray-800 mb-6">
-          Iniciar Sesión
-        </h1>
-        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-          <InputField
-            label="Introduzca su Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <InputField
-            label="Introduzca su Contraseña"
-            name="contraseña"
-            type="password"
-            value={formData.contraseña}
-            onChange={handleChange}
-          />
-          <button
-            type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300"
-          >
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('/fondo.jpeg')] bg-cover bg-center opacity-90"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen relative z-10">
+        <div className="bg-white bg-opacity-10 backdrop-blur-lg p-10 rounded-xl shadow-lg w-full max-w-lg">
+          <h1 className="text-4xl font-bold text-white text-center mb-8">
             Iniciar Sesión
-          </button>
-        </form>
+          </h1>
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+            <InputField
+              label="Introduzca su Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Introduzca su Contraseña"
+              name="contraseña"
+              type="password"
+              value={formData.contraseña}
+              onChange={handleChange}
+            />
+            <button
+              type="submit"
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-3 rounded-lg transition duration-300 w-full"
+            >
+              Iniciar Sesión
+            </button>
+          </form>
+          <div className="mt-4 text-center">
+            <Link href="/auth/register" className="text-white hover:underline">
+              ¿No tienes una cuenta? Regístrate aquí
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

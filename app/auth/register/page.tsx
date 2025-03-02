@@ -3,6 +3,7 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import InputField from "@/app/components/InputField";
 import SelectField from "@/app/components/SelectField";
+import Link from "next/link";
 
 interface Department {
   id_departamentos: number;
@@ -75,65 +76,74 @@ export default function Register() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-teal-100">
-      <div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-lg">
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
-          Registrarse
-        </h1>
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          {(
-            [
-              "nombre",
-              "apellido",
-              "email",
-              "contraseña",
-              "fechaNacimiento",
-            ] as Array<keyof FormData>
-          ).map((name) => (
-            <InputField
-              key={name}
-              label={name.charAt(0).toUpperCase() + name.slice(1)}
-              name={name}
-              type={
-                name === "fechaNacimiento"
-                  ? "date"
-                  : name === "contraseña"
-                  ? "password"
-                  : "text"
-              }
-              value={formData[name]}
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="absolute inset-0 bg-[url('/fondo.jpeg')] bg-cover bg-center opacity-90"></div>
+
+      <div className="flex flex-col items-center justify-center min-h-screen relative z-10">
+        <div className="bg-white bg-opacity-10 backdrop-blur-lg p-10 rounded-xl shadow-lg w-full max-w-lg">
+          <h1 className="text-4xl font-bold text-white text-center mb-8">
+            Registrarse
+          </h1>
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+            {(
+              [
+                "nombre",
+                "apellido",
+                "email",
+                "contraseña",
+                "fechaNacimiento",
+              ] as Array<keyof FormData>
+            ).map((name) => (
+              <InputField
+                key={name}
+                label={name.charAt(0).toUpperCase() + name.slice(1)}
+                name={name}
+                type={
+                  name === "fechaNacimiento"
+                    ? "date"
+                    : name === "contraseña"
+                    ? "password"
+                    : "text"
+                }
+                value={formData[name]}
+                onChange={handleChange}
+              />
+            ))}
+
+            <SelectField
+              label="Selecciona un Departamento"
+              name="departamentoId"
+              value={formData.departamentoId}
+              options={departments.map((dept) => ({
+                value: dept.id_departamentos,
+                label: dept.nombre,
+              }))}
               onChange={handleChange}
             />
-          ))}
-
-          <SelectField
-            label="Selecciona un Departamento"
-            name="departamentoId"
-            value={formData.departamentoId}
-            options={departments.map((dept) => ({
-              value: dept.id_departamentos,
-              label: dept.nombre,
-            }))}
-            onChange={handleChange}
-          />
-          <SelectField
-            label="Selecciona un Rol"
-            name="rol"
-            value={formData.rol}
-            options={[
-              { value: "empleado", label: "Empleado" },
-              { value: "jefe", label: "Jefe" },
-              { value: "gerente", label: "Gerente" },
-            ]}
-            onChange={handleChange}
-          />
-          <button
-            type="submit"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300 w-full"
-          >
-            Registrarse
-          </button>
-        </form>
+            <SelectField
+              label="Selecciona un Rol"
+              name="rol"
+              value={formData.rol}
+              options={[
+                { value: "empleado", label: "Empleado" },
+                { value: "jefe", label: "Jefe" },
+                { value: "gerente", label: "Gerente" },
+              ]}
+              onChange={handleChange}
+            />
+            <button
+              type="submit"
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-bold py-3 rounded-lg transition duration-300 w-full"
+            >
+              Registrarse
+            </button>
+          </form>
+          <div className="mt-4 text-center">
+            <Link href="/auth/login" className="text-white hover:underline">
+              ¿Ya tienes una cuenta? Inicia sesión
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
