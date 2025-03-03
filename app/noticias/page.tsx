@@ -28,6 +28,7 @@ export default function Noticias() {
   const [idDepartamento, setIdDepartamento] = useState<string | null>(null);
   const [idEmpleado, setIdEmpleado] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const router = useRouter();
 
@@ -102,7 +103,7 @@ export default function Noticias() {
   };
 
   const handleSelectNoticia = (noticia: Noticia) => {
-    setSelectedNoticia(noticia); // Guardar la noticia seleccionada
+    setSelectedNoticia(noticia);
   };
 
   const handleCloseDetails = () => {
@@ -124,86 +125,134 @@ export default function Noticias() {
   };
 
   return (
-    <div className="p-4">
-      {/* Botones superiores */}
+    <div
+      className="p-4 bg-cover bg-center min-h-screen text-black"
+      style={{ backgroundImage: "url('/fondonoticias.jpg')" }}
+    >
       <div className="flex justify-between items-center mb-4">
+        {/* Mostrar el botón de Ver Empleados solo si el rol es "jefe" */}
         {rol === "jefe" && (
           <button
             onClick={navigateToEmpleados}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+            className="bg-blue-800 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-900 transition text-lg"
           >
             Ver Empleados
           </button>
         )}
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition"
-        >
-          Desloguearse
-        </button>
+
+        <div className="ml-auto relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-900 transition text-lg"
+          >
+            ☰
+          </button>
+          {showMenu && (
+            <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-48 text-black">
+              <ul>
+                <li>
+                  <button
+                    onClick={() => router.push("/perfil")}
+                    className="flex items-center p-2 hover:bg-gray-200"
+                  >
+                    <img
+                      src="/perfil.png"
+                      alt="Perfil"
+                      className="w-5 h-5 mr-2"
+                    />
+                    Perfil
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center p-2 hover:bg-gray-200"
+                  >
+                    <img
+                      src="/logout.png"
+                      alt="Logout"
+                      className="w-5 h-5 mr-2"
+                    />
+                    Logout
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => router.push("/mis-noticias")}
+                    className="flex items-center p-2 hover:bg-gray-200"
+                  >
+                    <img
+                      src="/misnoticias.png"
+                      alt="Mis Noticias"
+                      className="w-7 h-5 mr-2"
+                    />
+                    Mis Noticias
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+      <h1 className="text-5xl font-bold text-center mb-20">
         Noticias del Departamento
       </h1>
 
-      {/* Detalles de la noticia */}
       {selectedNoticia ? (
-        <div
-          className="bg-white shadow-lg rounded-2xl p-6 border-t-4 mb-6"
-          style={{ borderColor: selectedNoticia.color }}
-        >
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            {selectedNoticia.titulo}
-          </h2>
-          <p className="text-gray-600 mb-4">{selectedNoticia.contenido}</p>
-          <p className="text-sm text-gray-500 mb-2">
-            Fecha del evento:{" "}
-            {new Date(selectedNoticia.fecha_evento).toLocaleDateString()}
-          </p>
-          <p className="text-sm text-gray-500">
-            Creador: {selectedNoticia.creador_nombre ?? "Desconocido"}
-          </p>
-          <button
-            onClick={handleCloseDetails}
-            className="mt-4 bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 transition"
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div
+            className="bg-violet-300 p-6 rounded-2xl shadow-lg w-11/12 sm:w-2/3 lg:w-1/2 relative text-black"
+            style={{ borderColor: selectedNoticia.color, borderWidth: "6px" }}
           >
-            Cerrar
-          </button>
+            <button
+              onClick={handleCloseDetails}
+              className="absolute top-1 right-1 text-white bg-red-600 p-1 rounded-full shadow-lg hover:bg-red-700 transition"
+            >
+              ✖
+            </button>
+            <h2 className="text-3xl font-semibold mb-4">
+              {selectedNoticia.titulo}
+            </h2>
+            <p className="text-xl mb-4">{selectedNoticia.contenido}</p>
+            <p className="text-lg mb-2">
+              Fecha del evento:{" "}
+              {new Date(selectedNoticia.fecha_evento).toLocaleDateString()}
+            </p>
+            <p className="text-lg">
+              Creador: {selectedNoticia.creador_nombre ?? "Desconocido"}
+            </p>
+          </div>
         </div>
       ) : (
-        // Lista de noticias
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {noticias.length > 0 ? (
             noticias.map((noticia) => (
               <button
                 key={noticia.id_noticias}
-                className="bg-white shadow-lg rounded-2xl p-6 border-t-4 cursor-pointer hover:shadow-xl transition"
+                className="bg-violet-300 shadow-lg rounded-2xl p-6 border-4 cursor-pointer hover:shadow-xl transition text-black"
                 style={{ borderColor: noticia.color }}
                 onClick={() => handleSelectNoticia(noticia)}
               >
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                <h2 className="text-2xl font-semibold mb-2">
                   {noticia.titulo}
                 </h2>
-                <p className="text-gray-600 mb-4">
-                  {noticia.descripcion_general}
-                </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-xl mb-4">{noticia.descripcion_general}</p>
+                <p className="text-lg">
                   Fecha: {new Date(noticia.fecha_evento).toLocaleDateString()}
                 </p>
               </button>
             ))
           ) : (
-            <p className="text-gray-600">No hay noticias disponibles.</p>
+            <p className="text-xl">No hay noticias disponibles.</p>
           )}
         </div>
       )}
 
-      {/* Botón centrado de "Agregar Noticia" */}
       <div className="flex justify-center mt-6">
         <button
           onClick={handleAddNoticia}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 transition"
+          className="bg-blue-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-900 transition text-xl"
         >
           Agregar Noticia
         </button>
