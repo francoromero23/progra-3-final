@@ -90,51 +90,47 @@ export default function Empleados() {
     );
 
   return (
-    <div className="p-6 bg-gradient-to-r from-indigo-100 to-teal-100">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+    <div
+      className="p-4 bg-cover bg-center min-h-screen text-black"
+      style={{ backgroundImage: "url('/fondonoticias.jpg')" }}
+    >
+      <h1 className="text-5xl font-bold text-center mb-10">
         Lista de Empleados
       </h1>
       <div className="overflow-x-auto">
-        <table className="table-auto w-full text-left border-collapse border border-gray-300">
+        <table className="w-full border-collapse bg-violet-300 shadow-lg rounded-2xl text-black">
           <thead>
-            <tr className="bg-indigo-200">
-              <th className="border border-gray-300 px-4 py-2">ID</th>
-              <th className="border border-gray-300 px-4 py-2">Nombre</th>
-              <th className="border border-gray-300 px-4 py-2">Apellido</th>
-              <th className="border border-gray-300 px-4 py-2">
-                Fecha de Nacimiento
-              </th>
-              <th className="border border-gray-300 px-4 py-2">Email</th>
-              <th className="border border-gray-300 px-4 py-2">Rol</th>
-              <th className="border border-gray-300 px-4 py-2">Departamento</th>
-              <th className="border border-gray-300 px-4 py-2">Acciones</th>
+            <tr className="bg-blue-800 text-white">
+              <th className="px-4 py-3">ID</th>
+              <th className="px-4 py-3">Nombre</th>
+              <th className="px-4 py-3">Apellido</th>
+              <th className="px-4 py-3">Nacimiento</th>
+              <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Rol</th>
+              <th className="px-4 py-3">Departamento</th>
+              <th className="px-4 py-3">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {empleados.map((empleado) => (
-              <tr key={empleado.id_empleados}>
-                <td className="border border-gray-300 px-4 py-2">
+              <tr
+                key={empleado.id_empleados}
+                className="border-b border-gray-300 last:border-b-0"
+              >
+                <td className="px-4 py-2 text-center">
                   {empleado.id_empleados}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {empleado.nombre}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {empleado.apellido}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-4 py-2 text-center">{empleado.nombre}</td>
+                <td className="px-4 py-2 text-center">{empleado.apellido}</td>
+                <td className="px-4 py-2 text-center">
                   {new Date(empleado.fecha_nacimiento).toLocaleDateString()}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {empleado.email}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
-                  {empleado.rol}
-                </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-4 py-2 text-center">{empleado.email}</td>
+                <td className="px-4 py-2 text-center">{empleado.rol}</td>
+                <td className="px-4 py-2 text-center">
                   {empleado.departamento.nombre}
                 </td>
-                <td className="border border-gray-300 px-4 py-2">
+                <td className="px-4 py-2">
                   <button
                     className="text-blue-500 hover:text-blue-700 font-semibold mr-2"
                     onClick={() => setEditingEmpleado(empleado)}

@@ -149,11 +149,11 @@ export default function Noticias() {
           </button>
           {showMenu && (
             <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-lg w-48 text-black">
-              <ul>
+              <ul className="w-full">
                 <li>
                   <button
                     onClick={() => router.push("/perfil")}
-                    className="flex items-center p-2 hover:bg-gray-200"
+                    className="flex items-center w-full p-2 hover:bg-gray-200 text-left"
                   >
                     <img
                       src="/perfil.png"
@@ -166,7 +166,7 @@ export default function Noticias() {
                 <li>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center p-2 hover:bg-gray-200"
+                    className="flex items-center w-full p-2 hover:bg-gray-200 text-left"
                   >
                     <img
                       src="/logout.png"
@@ -179,7 +179,7 @@ export default function Noticias() {
                 <li>
                   <button
                     onClick={() => router.push("/mis-noticias")}
-                    className="flex items-center p-2 hover:bg-gray-200"
+                    className="flex items-center w-full p-2 hover:bg-gray-200 text-left"
                   >
                     <img
                       src="/misnoticias.png"
