@@ -39,7 +39,7 @@ export default function Empleados() {
         }
         const verifyData = await verifyRes.json();
         const authenticatedRol = verifyData.rol?.toLowerCase();
-        setUserRol(authenticatedRol); // Guardar el rol del usuario
+        setUserRol(authenticatedRol); 
 
         // 2. Autorizar: Solo jefes pueden ver esta página
         if (authenticatedRol !== "jefe") {
