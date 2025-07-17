@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Empleado {
   id_empleados: number;
@@ -10,7 +11,7 @@ interface Empleado {
   email: string;
   rol: string;
   departamento: {
-    nombre: string;
+    nombre: string; // CORRECCIÓN: Asegurarse de que coincida con el mapeo de la API
   };
 }
 
@@ -21,26 +22,65 @@ export default function Empleados() {
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [editingEmpleado, setEditingEmpleado] = useState<Empleado | null>(null);
+  const [userRol, setUserRol] = useState<string | null>(null); // Estado para el rol del usuario
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchEmpleados = async () => {
+    const verifySessionAndFetchEmpleados = async () => {
       try {
+        // 1. Verificar la sesión del usuario
+        const verifyRes = await fetch("/api/auth/verify-token");
+        if (!verifyRes.ok) {
+          alert(
+            "No tienes una sesión activa o ha expirado. Por favor, inicia sesión de nuevo."
+          );
+          router.push("/"); // Redirigir al login si no está autenticado
+          return;
+        }
+        const verifyData = await verifyRes.json();
+        const authenticatedRol = verifyData.rol?.toLowerCase();
+        setUserRol(authenticatedRol); // Guardar el rol del usuario
+
+        // 2. Autorizar: Solo jefes pueden ver esta página
+        if (authenticatedRol !== "jefe") {
+          alert("No tienes permisos para ver esta página.");
+          router.push("/noticias"); // Redirigir a noticias si no es jefe
+          return;
+        }
+
+        // 3. Si es jefe, cargar los empleados
         const res = await fetch(`/api/empleados`);
-        if (!res.ok) throw new Error("Error al cargar los empleados");
+        if (!res.ok) {
+          const errorData = await res.json();
+          const errorMessage =
+            errorData.message || "Error desconocido al cargar los empleados.";
+          alert(`Error al cargar empleados: ${errorMessage}`);
+          throw new Error(errorMessage);
+        }
 
         const data: Empleado[] = await res.json();
         setEmpleados(data);
       } catch (error) {
-        console.error("Error al cargar empleados:", error);
+        console.error(
+          "Error en la carga de empleados o verificación de sesión:",
+          error
+        );
+        // Si el error ya mostró un alert, no es necesario otro aquí
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEmpleados();
-  }, []);
+    verifySessionAndFetchEmpleados();
+  }, [router]); // Dependencia del router
 
   const handleDelete = async (id: number) => {
+    // Comprobación de rol adicional en el cliente (aunque la API también lo hace)
+    if (userRol !== "jefe") {
+      alert("No tienes permisos para eliminar empleados.");
+      return;
+    }
+
     const res = await fetch(`/api/empleados`, {
       method: "DELETE",
       headers: {
@@ -54,13 +94,24 @@ export default function Empleados() {
         prevEmpleados.filter((empleado) => empleado.id_empleados !== id)
       );
     } else {
-      console.error("Error al eliminar el empleado");
+      const errorData = await res.json();
+      const errorMessage =
+        errorData.message || "Error desconocido al eliminar el empleado.";
+      alert(`Error al eliminar el empleado: ${errorMessage}`);
+      console.error("Error al eliminar el empleado:", errorData);
     }
     setConfirmDelete(null); // Cerrar el cuadro de confirmación
   };
 
   const handleEdit = async () => {
     if (!editingEmpleado) return;
+
+    // Comprobación de rol adicional en el cliente
+    if (userRol !== "jefe") {
+      alert("No tienes permisos para editar empleados.");
+      setEditingEmpleado(null); // Cerrar el modal de edición
+      return;
+    }
 
     const res = await fetch(`/api/empleados`, {
       method: "PUT",
@@ -78,16 +129,36 @@ export default function Empleados() {
       );
       setEditingEmpleado(null);
     } else {
-      console.error("Error al actualizar empleado");
+      const errorData = await res.json();
+      const errorMessage =
+        errorData.message || "Error desconocido al actualizar empleado.";
+      alert(`Error al actualizar empleado: ${errorMessage}`);
+      console.error("Error al actualizar empleado:", errorData);
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <p className="text-center mt-6 text-lg text-gray-700">
-        Cargando empleados...
-      </p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-xl font-semibold text-gray-700">
+          Cargando empleados...
+        </p>
+      </div>
     );
+  }
+
+  // Si no es jefe y ya terminó de cargar, redirigir
+  if (userRol !== "jefe") {
+    // Esto ya debería manejarse en el useEffect con el alert y router.push
+    // Pero como fallback, podemos mostrar un mensaje o un spinner si la redirección tarda.
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-100 text-red-700">
+        <p className="text-xl font-semibold">
+          Acceso denegado. Redirigiendo...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -152,7 +223,7 @@ export default function Empleados() {
       </div>
 
       {editingEmpleado && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-8 rounded-xl shadow-xl w-96">
             <h2 className="text-xl font-bold mb-4 text-gray-800">
               Editar Empleado
@@ -198,7 +269,7 @@ export default function Empleados() {
               <input
                 type="date"
                 className="w-full border-2 border-gray-300 px-4 py-2 rounded-lg shadow-sm"
-                value={editingEmpleado.fecha_nacimiento}
+                value={editingEmpleado.fecha_nacimiento.split("T")[0]} // Formato YYYY-MM-DD para input type="date"
                 onChange={(e) =>
                   setEditingEmpleado({
                     ...editingEmpleado,
@@ -264,7 +335,7 @@ export default function Empleados() {
       )}
 
       {confirmDelete && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <p className="text-gray-700 mb-4">
               ¿Estás seguro de que deseas eliminar a este empleado? Esto también
