@@ -3,6 +3,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import InputField from "@/app/components/InputField";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   email: string;
@@ -18,6 +19,7 @@ interface LoginResponse {
 }
 
 export default function Login() {
+  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     email: "",
     contraseña: "",
@@ -30,23 +32,29 @@ export default function Login() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+        if (!formData.email || !formData.contraseña) {
+      alert("Por favor, ingresa tu email y contraseña.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Por favor, ingresa un formato de email válido.");
+      return;
+    }
+
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
-      if (!res.ok) throw new Error("Error al iniciar sesión.");
-
       const data: LoginResponse = await res.json();
 
       if (data.success) {
-        localStorage.setItem("empleadoId", data.id_empleado ?? "");
-        localStorage.setItem("departamentoId", data.id_departamento ?? "");
-        localStorage.setItem("rol", data.rol ?? "");
-
-        window.location.href = "/noticias";
+        // ya no guardo id_empleado, id_departamento o rol en localStorage aquí.
+        // Si el token se envía como HttpOnly cookie, el navegador lo manejará automáticamente.
+        router.push("/noticias");
       } else {
         alert(data.message ?? "Error desconocido.");
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 interface Noticia {
@@ -10,39 +10,100 @@ interface Noticia {
   descripcion_general: string;
   fecha_evento: string;
   color: string;
+  creador_nombre?: string; // Asegúrate de que esta propiedad también esté aquí si tu API la devuelve
 }
 
 export default function MisNoticias() {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [idEmpleado, setIdEmpleado] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Nuevo estado de carga
   const router = useRouter();
 
+  // Función para cargar las noticias del empleado, envuelta en useCallback
+  const fetchMisNoticias = useCallback(
+    async (empleadoId: string) => {
+      try {
+        // Llama al endpoint /api/noticias y pasa empleadoId como query param
+        const res = await fetch(`/api/noticias?empleadoId=${empleadoId}`);
+        if (!res.ok) {
+          // Si la API responde con 401/403, significa que la sesión no es válida o no hay permisos
+          if (res.status === 401 || res.status === 403) {
+            alert(
+              "Tu sesión ha expirado o no tienes permisos. Por favor, inicia sesión de nuevo."
+            );
+            router.push("/");
+            return;
+          }
+          throw new Error("Error al cargar tus noticias");
+        }
+        const data: Noticia[] = await res.json();
+        setNoticias(data);
+      } catch (error) {
+        console.error("Error al cargar tus noticias:", error);
+      }
+    },
+    [router]
+  ); // Dependencia del router para useCallback
+
   useEffect(() => {
-    const storedIdEmpleado = localStorage.getItem("empleadoId");
+    // Función para verificar la sesión y cargar datos del usuario
+    const verifySessionAndLoadNews = async () => {
+      try {
+        const res = await fetch("/api/auth/verify-token");
+        if (!res.ok) {
+          // Si la verificación falla (token inválido/expirado), redirigir a login
+          alert("No tienes una sesión activa o ha expirado.");
+          router.push("/");
+          return;
+        }
+        const data = await res.json();
+        if (data.success) {
+          setIdEmpleado(data.id_empleado); // Guarda el idEmpleado del token
+          fetchMisNoticias(data.id_empleado); // Llama a fetchMisNoticias con el ID del token
+        } else {
+          alert("No se pudo verificar tu sesión.");
+          router.push("/"); // Redirigir si la verificación no fue exitosa
+        }
+      } catch (error) {
+        console.error("Error al verificar la sesión:", error);
+        alert("Ocurrió un error al verificar tu sesión. Intenta de nuevo.");
+        router.push("/"); // Redirigir en caso de error de red o similar
+      } finally {
+        setIsLoading(false); // Finalizar la carga
+      }
+    };
 
-    if (!storedIdEmpleado) {
-      alert("No tienes una sesión activa.");
-      router.push("/"); // Redirigir al inicio si no hay sesión
-      return;
-    }
+    verifySessionAndLoadNews();
+  }, [router, fetchMisNoticias]); // Añadida fetchMisNoticias como dependencia de useEffect
 
-    setIdEmpleado(storedIdEmpleado);
-    fetchMisNoticias(storedIdEmpleado);
-  }, [router]);
+  // Mostrar un estado de carga mientras se verifica la sesión
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-xl font-semibold text-gray-700">
+          Cargando tus noticias...
+        </p>
+      </div>
+    );
+  }
 
-  const fetchMisNoticias = async (idEmpleado: string) => {
-    try {
-      const res = await fetch(`/api/noticias?empleadoId=${idEmpleado}`);
-      if (!res.ok) throw new Error("Error al cargar noticias");
-      const data: Noticia[] = await res.json();
-      setNoticias(data);
-    } catch (error) {
-      console.error("Error al cargar noticias:", error);
-    }
-  };
+  // Si no hay idEmpleado después de la carga (lo que implica que no se pudo autenticar),
+  // se asume que router.push('/') ya se encargó de la redirección.
+  if (!idEmpleado) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-100 text-red-700">
+        <p className="text-xl font-semibold">
+          Acceso denegado. Redirigiendo...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen text-black">
+    <div
+      className="p-6 bg-cover bg-center min-h-screen text-black"
+      style={{ backgroundImage: "url('/fondonoticias.jpg')" }}
+    >
       <h1 className="text-4xl font-bold text-center mb-6">Mis Noticias</h1>
 
       {noticias.length > 0 ? (
@@ -58,6 +119,11 @@ export default function MisNoticias() {
               <p className="text-sm">
                 Fecha: {new Date(noticia.fecha_evento).toLocaleDateString()}
               </p>
+              {noticia.creador_nombre && (
+                <p className="text-sm text-gray-600">
+                  Creador: {noticia.creador_nombre}
+                </p>
+              )}
             </div>
           ))}
         </div>
@@ -67,10 +133,10 @@ export default function MisNoticias() {
 
       <div className="flex justify-center mt-6">
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/noticias")}
           className="bg-blue-800 text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-900 transition"
         >
-          Volver al inicio
+          Volver a Noticias del Departamento
         </button>
       </div>
     </div>

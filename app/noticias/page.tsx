@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import FormularioNoticia from "../components/FormularioNoticia";
+import Image from "next/image";
+import FormularioNoticia from "../components/FormularioNoticia"; // Asegúrate de que esta ruta sea correcta
 
 interface Noticia {
   id_noticias: number;
@@ -11,7 +12,7 @@ interface Noticia {
   descripcion_general: string;
   fecha_evento: string;
   color: string;
-  creador_nombre?: string; // Nombre del creador de la noticia
+  creador_nombre?: string;
 }
 
 export default function Noticias() {
@@ -29,40 +30,93 @@ export default function Noticias() {
   const [idEmpleado, setIdEmpleado] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
 
+  const fetchNoticias = useCallback(
+    async (departamentoId: string) => {
+      try {
+        const res = await fetch(
+          `/api/noticias?departamentoId=${departamentoId}`
+        );
+        if (!res.ok) {
+          const errorData = await res.json();
+          const errorMessage =
+            errorData.message || "Error desconocido al cargar noticias.";
+
+          if (res.status === 401 || res.status === 403) {
+            alert(
+              `Error de autenticación/autorización: ${errorMessage}. Por favor, inicia sesión de nuevo.`
+            );
+            router.push("/");
+            return;
+          }
+          alert(`Error al cargar noticias: ${errorMessage}`);
+          throw new Error(errorMessage);
+        }
+        const data: Noticia[] = await res.json();
+        setNoticias(data);
+      } catch (error) {
+        console.error("Error al cargar noticias:", error);
+      }
+    },
+    [router]
+  );
+
   useEffect(() => {
-    const storedRol = localStorage.getItem("rol") ?? null;
-    const storedDepartamentoId = localStorage.getItem("departamentoId") ?? null;
-    const storedEmpleadoId = localStorage.getItem("empleadoId") ?? null;
+    const verifySession = async () => {
+      try {
+        const res = await fetch("/api/auth/verify-token");
+        if (!res.ok) {
+          router.push("/");
+          return;
+        }
+        const data = await res.json();
+        if (data.success) {
+          setRol(data.rol);
+          setIdDepartamento(data.id_departamento);
+          setIdEmpleado(data.id_empleado);
+          fetchNoticias(data.id_departamento);
+        } else {
+          router.push("/");
+        }
+      } catch (error) {
+        console.error("Error al verificar la sesión:", error);
+        router.push("/");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    setRol(storedRol);
-    setIdDepartamento(storedDepartamentoId);
-    setIdEmpleado(storedEmpleadoId);
-
-    if (storedDepartamentoId) {
-      fetchNoticias(storedDepartamentoId);
-    }
-  }, []);
-
-  const fetchNoticias = async (departamentoId: string) => {
-    try {
-      const res = await fetch(`/api/noticias?departamentoId=${departamentoId}`);
-      if (!res.ok) throw new Error("Error al cargar noticias");
-      const data: Noticia[] = await res.json();
-      setNoticias(data);
-    } catch (error) {
-      console.error("Error al cargar noticias:", error);
-    }
-  };
+    verifySession();
+  }, [router, fetchNoticias]);
 
   const handleAddNoticia = () => {
-    if (rol !== "jefe" && rol !== "gerente") {
-      alert("No tienes los permisos necesarios para realizar noticias.");
+    const currentRol = rol?.toLowerCase();
+    if (currentRol !== "jefe" && currentRol !== "gerente") {
+      alert("No tienes los permisos necesarios para crear noticias.");
       return;
     }
     setShowForm(true);
+    setFormData({
+      titulo: "",
+      contenido: "",
+      descripcion: "",
+      color: "",
+      fecha_evento: "",
+    });
+  };
+
+  const handleCancelAddNoticia = () => {
+    setShowForm(false);
+    setFormData({
+      titulo: "",
+      contenido: "",
+      descripcion: "",
+      color: "",
+      fecha_evento: "",
+    });
   };
 
   const handleChange = (
@@ -74,18 +128,16 @@ export default function Noticias() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    try {
-      if (!idEmpleado || !idDepartamento) {
-        alert(
-          "No se encontró el empleado o departamento para crear la noticia."
-        );
-        return;
-      }
+    if (!idEmpleado || !idDepartamento) {
+      alert(
+        "No se encontró la información del empleado o departamento. Por favor, recarga la página."
+      );
+      return;
+    }
 
+    try {
       const newNoticia = {
         ...formData,
-        id_empleado: idEmpleado,
-        id_departamento: idDepartamento,
       };
       const res = await fetch("/api/noticias", {
         method: "POST",
@@ -93,12 +145,27 @@ export default function Noticias() {
         body: JSON.stringify(newNoticia),
       });
 
-      if (!res.ok) throw new Error("Error al crear la noticia");
+      if (!res.ok) {
+        const errorData = await res.json();
+        const errorMessage =
+          errorData.message || "Error desconocido al crear la noticia.";
+
+        if (res.status === 401 || res.status === 403) {
+          alert(
+            `No autorizado para crear noticias o sesión expirada: ${errorMessage}. Por favor, inicia sesión de nuevo.`
+          );
+          router.push("/");
+          return;
+        }
+        alert(`Hubo un error al crear la noticia: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
       setShowForm(false);
-      fetchNoticias(idDepartamento);
-    } catch (error) {
+      if (idDepartamento) {
+        fetchNoticias(idDepartamento);
+      }
+    } catch (error: unknown) {
       console.error("Error al crear noticia:", error);
-      alert("Hubo un error al crear la noticia.");
     }
   };
 
@@ -107,22 +174,53 @@ export default function Noticias() {
   };
 
   const handleCloseDetails = () => {
-    setSelectedNoticia(null); // Cerrar los detalles de la noticia
+    setSelectedNoticia(null);
   };
 
-  const handleLogout = () => {
-    // Eliminar la información del usuario del localStorage
-    localStorage.removeItem("rol");
-    localStorage.removeItem("departamentoId");
-    localStorage.removeItem("empleadoId");
-
-    // Redirigir al usuario a la página de inicio (app/page.jsx)
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (res.ok) {
+        router.push("/");
+      } else {
+        alert("Error al cerrar sesión. Por favor, intenta de nuevo.");
+      }
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      alert("Ocurrió un error de red al intentar cerrar sesión.");
+    }
   };
 
   const navigateToEmpleados = () => {
     router.push("/empleados");
   };
+
+  const navigateToGraficas = () => {
+    router.push("/graficas");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-xl font-semibold text-gray-700">
+          Cargando noticias...
+        </p>
+      </div>
+    );
+  }
+
+  if (!idDepartamento) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-100 text-red-700">
+        <p className="text-xl font-semibold">
+          Acceso denegado. Redirigiendo...
+        </p>
+      </div>
+    );
+  }
+
+  // Convertir el rol a minúsculas para comparaciones consistentes en el renderizado
+  const displayRol = rol?.toLowerCase();
 
   return (
     <div
@@ -130,15 +228,24 @@ export default function Noticias() {
       style={{ backgroundImage: "url('/fondonoticias.jpg')" }}
     >
       <div className="flex justify-between items-center mb-4">
-        {/* Mostrar el botón de Ver Empleados solo si el rol es "jefe" */}
-        {rol === "jefe" && (
-          <button
-            onClick={navigateToEmpleados}
-            className="bg-blue-800 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-900 transition text-lg"
-          >
-            Ver Empleados
-          </button>
-        )}
+        <div className="flex gap-4">
+          {displayRol === "jefe" && (
+            <button
+              onClick={navigateToEmpleados}
+              className="bg-blue-800 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-900 transition text-lg"
+            >
+              Ver Empleados
+            </button>
+          )}
+          {displayRol === "jefe" && (
+            <button
+              onClick={navigateToGraficas}
+              className="bg-green-700 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-800 transition text-lg"
+            >
+              Gráficas
+            </button>
+          )}
+        </div>
 
         <div className="ml-auto relative">
           <button
@@ -155,10 +262,12 @@ export default function Noticias() {
                     onClick={() => router.push("/perfil")}
                     className="flex items-center w-full p-2 hover:bg-gray-200 text-left"
                   >
-                    <img
+                    <Image
                       src="/perfil.png"
                       alt="Perfil"
-                      className="w-5 h-5 mr-2"
+                      width={20}
+                      height={20}
+                      className="mr-2"
                     />
                     Perfil
                   </button>
@@ -168,27 +277,34 @@ export default function Noticias() {
                     onClick={handleLogout}
                     className="flex items-center w-full p-2 hover:bg-gray-200 text-left"
                   >
-                    <img
+                    <Image
                       src="/logout.png"
                       alt="Logout"
-                      className="w-5 h-5 mr-2"
+                      width={20}
+                      height={20}
+                      className="mr-2"
                     />
                     Logout
                   </button>
                 </li>
-                <li>
-                  <button
-                    onClick={() => router.push("/mis-noticias")}
-                    className="flex items-center w-full p-2 hover:bg-gray-200 text-left"
-                  >
-                    <img
-                      src="/misnoticias.png"
-                      alt="Mis Noticias"
-                      className="w-7 h-5 mr-2"
-                    />
-                    Mis Noticias
-                  </button>
-                </li>
+                {/* CORRECCIÓN: El botón "Mis Noticias" solo se muestra para jefe y gerente */}
+                {(displayRol === "jefe" || displayRol === "gerente") && (
+                  <li>
+                    <button
+                      onClick={() => router.push("/mis-noticias")}
+                      className="flex items-center w-full p-2 hover:bg-gray-200 text-left"
+                    >
+                      <Image
+                        src="/misnoticias.png"
+                        alt="Mis Noticias"
+                        width={28}
+                        height={20}
+                        className="mr-2"
+                      />
+                      Mis Noticias
+                    </button>
+                  </li>
+                )}
               </ul>
             </div>
           )}
@@ -263,6 +379,7 @@ export default function Noticias() {
           formData={formData}
           onChange={handleChange}
           onSubmit={handleSubmit}
+          onCancel={handleCancelAddNoticia}
         />
       )}
     </div>
